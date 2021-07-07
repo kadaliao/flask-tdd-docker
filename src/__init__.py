@@ -1,19 +1,25 @@
 # src/__init__.py
 
-from flask import Flask
-from flask_restx import Resource, Api
+import os
+import sys
 
+from flask import Flask
+
+from flask_restx import Api, Resource
 
 app = Flask(__name__)
 api = Api(app)
 
-app.config.from_object('src.config.DevelopmentConfig')
+app_settings = os.getenv("APP_SETTINGS")
+app.config.from_object(app_settings)
+
+
+print(app.config, file=sys.stderr)
+
 
 class Ping(Resource):
-      def get(self):
-            return {
-                  'status': 'success',
-                  'message': 'pong!'
-            }
+    def get(self):
+        return {"status": "success", "message": "pong!"}
 
-api.add_resource(Ping, '/ping')
+
+api.add_resource(Ping, "/ping")
