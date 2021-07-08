@@ -8,6 +8,11 @@ WORKDIR /usr/src/app
 ENV PYHTONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+# 安装系统更依赖
+RUN apt-get update \
+  && apt-get -y install netcat gcc postgresql \
+  && apt-get clean
+
 # 添加安装依赖文件并安装
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
@@ -15,5 +20,6 @@ RUN pip install -r requirements.txt
 # 添加应用程序
 COPY . .
 
-# 运行服务器
-CMD python manage.py run -h 0.0.0.0
+# 添加 entrypoint.sh
+COPY ./entrypoint.sh .
+RUN chmod +x /usr/src/app/entrypoint.sh
