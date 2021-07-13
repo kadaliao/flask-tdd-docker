@@ -18,11 +18,12 @@ def create_app(script_info=None):
     db.init_app(app)
 
     from src.api.ping import ping_blueprint
+
     app.register_blueprint(ping_blueprint)
 
     from src.api.users import users_blueprint
-    app.register_blueprint(users_blueprint)
 
+    app.register_blueprint(users_blueprint)
 
     @app.shell_context_processor
     def ctx():
