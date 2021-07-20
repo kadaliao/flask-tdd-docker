@@ -1,0 +1,72 @@
+name: Continuous Integration and Delivery
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  WEB_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/web
+
+jobs:
+
+  test:
+      name: Test
+      # Containers must run in Linux based operating systems
+      runs-on: ubuntu-latest
+      container: python:3.9.5-slim-buster
+
+      # Service containers to run with `container-job`
+      services:
+        # Label used to access the service container
+        postgres:
+          # Docker Hub image
+          image: postgres
+          # Provide the password for postgres
+          env:
+            POSTGRES_DB: users
+            POSTGRES_USER: runner
+            POSTGRES_PASSWORD: runner
+          # Set health checks to wait until postgres has started
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+
+      steps:
+        # Downloads a copy of the code in your repository before running CI tests
+        - name: Check out repository code
+          uses: actions/checkout@v2
+        - name: Install Dependencies
+          run: pip install -r requirements.txt
+        - name: Run Tests
+          run: |
+            pytest "src/tests" -p no:warnings
+            flake8 src
+            black src --check
+            isort src --check-only
+          env:
+            FLASK_APP: src/__init__.py
+            FLASK_ENV: development
+            APP_SETTINGS: src.config.DevelopmentConfig
+            DATABASE_TEST_URL: postgresql://runner:runner@postgres:5432/users
+
+  deploy:
+    name: Build and Deploy
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Install and Deploy
+        run: |
+          chmod +x ./release.sh
+          docker build --tag $HEROKU_REGISTRY_IMAGE  --file ./Dockerfile.prod  --build-arg SECRET_KEY=$SECRET_KEY  。
+          docker login -u _ -p ${{ secrets.HEROKU_AUTH_TOKEN }} registry.heroku.com
+          docker push $HEROKU_REGISTRY_IMAGE
+          ./release.sh
+        env:
+          HEROKU_APP_NAME: frozen-taiga-36167
+          HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
