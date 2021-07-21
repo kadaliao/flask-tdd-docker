@@ -1,12 +1,8 @@
-name: Continuous Integration and Delivery
+name: Main CI
 
 on:
   push:
-    branches:
-      - main
-
-env:
-  WEB_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/web
+    branches: main
 
 jobs:
 
@@ -54,7 +50,7 @@ jobs:
 
   deploy:
     name: Build and Deploy
-    # needs: test
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
