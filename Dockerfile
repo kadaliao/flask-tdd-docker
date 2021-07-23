@@ -14,8 +14,8 @@ RUN apt-get update \
   && apt-get clean
 
 # 添加安装依赖文件并安装
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+COPY requirements.txt requirements-dev.txt ./
+RUN pip install -r requirements-dev.txt
 
 # 添加应用程序
 COPY . .
