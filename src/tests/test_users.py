@@ -110,7 +110,7 @@ def test_remove_incorrect_id(test_app, test_database):
     resp = client.delete("/users/999")
     data = json.loads(resp.data.decode())
     assert resp.status_code == 404
-    assert "User 999 dose not exist" in data["message"]
+    assert "User 999 does not exist" in data["message"]
 
 
 def test_update_user(test_app, test_database, add_user):
