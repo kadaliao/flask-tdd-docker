@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - http_proxy:http://host.docker.internal:8118
+        - https_proxy:http://host.docker.internal:8118
     entrypoint: ['/usr/src/app/entrypoint.sh']
     volumes:
       - .:/usr/src/app
