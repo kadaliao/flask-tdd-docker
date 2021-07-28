@@ -1,5 +1,10 @@
+#############
+#  BUILDER  #
+#############
+
+
 # 获取官方镜像
-FROM python:3.9.5-slim-buster
+FROM python:3.9.5-slim-buster as builder
 
 # 设置工作目录
 WORKDIR /usr/src/app
@@ -7,8 +12,6 @@ WORKDIR /usr/src/app
 #### 设置环境变量 ####
 ENV PYHTONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV FLASK_ENV production
-ENV APP_SETTINGS src.config.ProductionConfig
 
 # 安装系统更依赖
 RUN apt-get update \
@@ -16,10 +19,44 @@ RUN apt-get update \
   && apt-get clean
 
 # 添加安装依赖文件并安装
+RUN pip install --upgrade pip
 COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 # 添加应用程序
+COPY . .
+RUN pip install black==21.5b1 flake8==3.9.2 isort==5.8.0
+RUN flake8 src
+RUN black src --check
+RUN isort src --check-only
+
+
+###########
+#  FINAL  #
+###########
+
+FROM python:3.9.5-slim-buster
+
+WORKDIR /usr/src/app
+
+ENV PYHTONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV FLASK_ENV production
+ENV APP_SETTINGS src.config.ProductionConfig
+
+ARG SECRET_KEY
+ENV SECRET_KEY $SECRET_KEY
+
+# 安装系统更依赖
+RUN apt-get update \
+  && apt-get -y install netcat gcc postgresql \
+  && apt-get clean
+
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --no-cache /wheels/*
+
 COPY . .
 
 # 添加非 root 用户
