@@ -64,4 +64,5 @@ jobs:
           docker push $HEROKU_REGISTRY_IMAGE
           ./release.sh
         env:
+          HEROKU_APP_NAME: frozen-taiga-36167
           HEROKU_REGISTRY_IMAGE: registry.heroku.com/frozen-taiga-36167/web
