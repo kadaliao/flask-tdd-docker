@@ -62,6 +62,7 @@ jobs:
           docker build --tag $HEROKU_REGISTRY_IMAGE  --file ./Dockerfile.prod  --build-arg SECRET_KEY={{secrets.SECRET_KEY}} .
           docker login -u _ -p ${{ secrets.HEROKU_AUTH_TOKEN }} registry.heroku.com
           docker push $HEROKU_REGISTRY_IMAGE
+          export HEROKU_AUTH_TOKEN=${{ secrets.HEROKU_AUTH_TOKEN }}
           ./release.sh
         env:
           HEROKU_APP_NAME: frozen-taiga-36167
