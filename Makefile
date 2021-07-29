@@ -11,3 +11,10 @@ test:
 lint:
 	docker-compose exec api black src
 	docker-compose exec api isort src
+
+recreate_db:
+	docker-compose exec api python manage.py recreate_db
+
+seed_db:
+	make recreate_db
+	docker-compose exec api python manage.py seed_db
