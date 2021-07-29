@@ -3,10 +3,12 @@
 import os
 
 from flask import Flask
+from flask_admin import Admin
 from flask_sqlalchemy import SQLAlchemy
 
 # initiate the db
 db = SQLAlchemy()
+admin = Admin(template_mode="bootstrap4")
 
 
 def create_app(script_info=None):
@@ -17,11 +19,14 @@ def create_app(script_info=None):
 
     db.init_app(app)
 
+    if os.getenv("FLASK_ENV") == "development":
+        admin.init_app(app)
+
     from src.api.ping import ping_blueprint
 
     app.register_blueprint(ping_blueprint)
 
-    from src.api.users import users_blueprint
+    from src.api.users.views import users_blueprint
 
     app.register_blueprint(users_blueprint)
 
